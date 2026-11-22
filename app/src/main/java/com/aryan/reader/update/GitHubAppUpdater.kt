@@ -114,7 +114,7 @@ object GitHubAppUpdater {
         _state.value = UpdateState.Idle
     }
 
-    private fun fetchLatestRelease(): ReleaseInfo = withContext(Dispatchers.IO) {
+    private fun fetchLatestRelease(): ReleaseInfo {
         val connection = URL(RELEASES_URL).openConnection() as HttpURLConnection
         try {
             connection.requestMethod = "GET"
