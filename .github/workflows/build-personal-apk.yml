@@ -1,0 +1,51 @@
+name: Build personal APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-debug:
+    name: Build installable debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install pinned NDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          ndk_version=$(sed -n 's/.*androidNdkVersion *= *"\([0-9.]*\)".*/\1/p' app/build.gradle.kts | head -1)
+          test -n "$ndk_version"
+          sdkmanager_bin=$(command -v sdkmanager || echo "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager")
+          "$sdkmanager_bin" --install "ndk;$ndk_version"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/$ndk_version" >> "$GITHUB_ENV"
+
+      - name: Build OSS debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PATH="$HOME/.cargo/bin:$PATH"
+          if ! command -v cargo >/dev/null 2>&1; then
+            curl --proto "=https" --tlsv1.2 -sSf https://sh.rustup.rs \
+              | sh -s -- -y --profile minimal --default-toolchain none --no-modify-path
+          fi
+          ( cd rust/office-oxide-bridge && cargo --version )
+          sed -i -e '/jogamp/d' -e '/https.jitpack/d' settings.gradle.kts
+          ./gradlew :app:assembleOssDebug --no-daemon -Pkotlin.daemon.jvmargs=-Xmx4g
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Episteme-oss-debug
+          path: app/build/outputs/renamed-apk/ossDebug/*.apk
+          if-no-files-found: error
