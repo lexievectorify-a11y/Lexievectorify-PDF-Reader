@@ -116,7 +116,7 @@ object GitHubAppUpdater {
 
     private fun fetchLatestRelease(): ReleaseInfo {
         val connection = URL(RELEASES_URL).openConnection() as HttpURLConnection
-        try {
+        return try {
             connection.requestMethod = "GET"
             connection.setRequestProperty("Accept", "application/vnd.github+json")
             connection.setRequestProperty("User-Agent", "Episteme-Personal-Updater")
@@ -159,7 +159,7 @@ object GitHubAppUpdater {
         val file = File(updateDir, "update.apk")
         if (file.exists()) file.delete()
         val connection = URL(release.apkUrl).openConnection() as HttpURLConnection
-        try {
+        return@withContext try {
             connection.requestMethod = "GET"
             connection.setRequestProperty("User-Agent", "Episteme-Personal-Updater")
             connection.connectTimeout = 15000
