@@ -69,6 +69,9 @@ import com.aryan.reader.tts.toMobileTtsHandoffRequest
 import com.aryan.reader.shared.ExternalDocumentIntakeRequest
 import com.aryan.reader.shared.ExternalDocumentOpenMode
 import com.aryan.reader.shared.ui.LocalSharedStringResolver
+import com.aryan.reader.update.GitHubAppUpdater
+import com.aryan.reader.update.UpdateDialog
+import com.aryan.reader.update.UpdateState
 
 @UnstableApi
 open class MainActivity : AppCompatActivity() {
@@ -124,7 +127,11 @@ open class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             delay(3000)
             runCatching {
-                platformFeaturesRepository.checkForUpdates(this@MainActivity, updateLauncher)
+                if (BuildConfig.BUILD_TYPE == "personal") {
+                    GitHubAppUpdater.check(applicationContext, force = false)
+                } else {
+                    platformFeaturesRepository.checkForUpdates(this@MainActivity, updateLauncher)
+                }
             }
         }
 
@@ -169,6 +176,7 @@ open class MainActivity : AppCompatActivity() {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
         val customFonts by viewModel.customFonts.collectAsStateWithLifecycle()
         val debugFpsEnabled by DebugFpsStore.enabled.collectAsStateWithLifecycle()
+        val updateState by GitHubAppUpdater.state.collectAsStateWithLifecycle()
 
         ScreenCaptureProtectionEffect(enabled = uiState.isScreenCaptureProtectionEnabled)
 
@@ -227,6 +235,18 @@ open class MainActivity : AppCompatActivity() {
                         // bar, top-left, above every destination. Gated
                         // twice (here + inside) so release builds pay
                         // nothing and never compose the Choreographer loop.
+                        if (updateState !is UpdateState.Idle) {
+                            UpdateDialog(
+                                state = updateState,
+                                onDismiss = { GitHubAppUpdater.dismiss() },
+                                onUpdate = { release ->
+                                    GitHubAppUpdater.downloadAndInstall(this@MainActivity, release)
+                                },
+                                onOpenPermission = {
+                                    GitHubAppUpdater.openPermissionSettings(this@MainActivity)
+                                },
+                            )
+                        }
                         if (BuildConfig.DEBUG && debugFpsEnabled) {
                             Box(
                                 modifier = Modifier

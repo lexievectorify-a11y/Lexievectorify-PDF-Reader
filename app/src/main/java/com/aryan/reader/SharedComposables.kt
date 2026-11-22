@@ -163,6 +163,7 @@ import com.aryan.reader.shared.SharedText
 import com.aryan.reader.shared.sharedLegalLinksForProfile
 import com.aryan.reader.shared.ui.SharedMarkdownText
 import com.aryan.reader.shared.ui.SharedBookInfoDialog
+import com.aryan.reader.update.GitHubAppUpdater
 import com.aryan.reader.shared.ui.SharedMobileEmptyLibrary
 import com.aryan.reader.shared.ui.SharedMobileTopBanner
 import com.aryan.reader.shared.ui.SharedMobileTopAppBar
@@ -679,13 +680,17 @@ private fun SharedText.resolveAndroidText(context: Context): String {
 @Composable
 fun AboutDialog(onDismiss: () -> Unit) {
     val uriHandler = LocalUriHandler.current
+    val context = LocalContext.current
     val isOss = BuildConfig.FLAVOR == "oss"
+    val isPersonal = BuildConfig.BUILD_TYPE == "personal"
     com.aryan.reader.shared.ui.SharedAndroidAboutDialog(
         strings = com.aryan.reader.shared.ui.SharedAndroidAboutStrings(
             appName = stringResource(R.string.about_app_name),
             flavorLabel = if (isOss) stringResource(R.string.about_oss_version) else stringResource(R.string.about_play_version),
             versionLabel = stringResource(R.string.about_version_name, BuildConfig.VERSION_NAME),
             buildLabel = stringResource(R.string.about_build_code, BuildConfig.VERSION_CODE.toString()),
+            modCredit = stringResource(R.string.about_mod_credit),
+            checkForUpdatesLabel = if (isPersonal) stringResource(R.string.update_check) else null,
             githubTitle = stringResource(R.string.about_github),
             githubDescription = stringResource(R.string.about_github_desc),
             privacyTitle = stringResource(R.string.legal_privacy_policy),
@@ -702,6 +707,11 @@ fun AboutDialog(onDismiss: () -> Unit) {
         onPrivacyClick = { uriHandler.openUri(PRIVACY_POLICY_URL) },
         onTermsClick = { uriHandler.openUri(TERMS_URL) },
         onLicensesClick = { uriHandler.openUri(LICENSES_URL) },
+        onCheckForUpdates = if (isPersonal) {
+            { GitHubAppUpdater.check(context.applicationContext, force = true) }
+        } else {
+            null
+        },
         githubIcon = {
             Icon(
                 painterResource(R.drawable.github),

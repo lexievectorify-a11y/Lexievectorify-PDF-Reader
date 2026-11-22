@@ -13,6 +13,11 @@
 
 <br/>
 
+> **Personal fork:** maintained by [lexievectorify](https://github.com/lexievectorify-a11y).
+> Fixes and additions in this build are listed in [CHANGELOG.md](CHANGELOG.md), with the full
+> per-file notice in [MODIFICATIONS.md](MODIFICATIONS.md). All credit for the original project
+> remains with the upstream authors.
+
 <table>
   <tr>
     <td width="50%" align="center">

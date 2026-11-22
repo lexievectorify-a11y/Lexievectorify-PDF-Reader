@@ -100,6 +100,8 @@ data class SharedAndroidAboutStrings(
     val flavorLabel: String,
     val versionLabel: String,
     val buildLabel: String,
+    val modCredit: String? = null,
+    val checkForUpdatesLabel: String? = null,
     val githubTitle: String,
     val githubDescription: String,
     val privacyTitle: String,
@@ -122,6 +124,7 @@ fun SharedAndroidAboutDialog(
     onTermsClick: () -> Unit,
     onLicensesClick: () -> Unit,
     githubIcon: @Composable () -> Unit,
+    onCheckForUpdates: (() -> Unit)? = null,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -141,6 +144,20 @@ fun SharedAndroidAboutDialog(
             ) {
                 Text(strings.versionLabel, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
                 Text(strings.buildLabel, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (strings.modCredit != null) {
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        strings.modCredit,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                if (onCheckForUpdates != null) {
+                    Spacer(Modifier.height(6.dp))
+                    TextButton(onClick = onCheckForUpdates) {
+                        Text(strings.checkForUpdatesLabel ?: "Check for updates")
+                    }
+                }
                 Spacer(Modifier.height(20.dp))
                 if (showGitHub) {
                     SharedAndroidAboutInfoRow(

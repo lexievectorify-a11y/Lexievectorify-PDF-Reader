@@ -315,6 +315,11 @@ internal fun AppDrawerContent(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(text = stringResource(R.string.app_name_oss), style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = stringResource(R.string.about_mod_credit),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
                 HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
             }

@@ -11,16 +11,20 @@ import org.w3c.dom.Element
 
 class AndroidFileProviderPathsContractTest {
     @Test
-    fun `provider exposes only the bounded share root`() {
+    fun `provider exposes only bounded share and update roots`() {
         val paths = readPaths()
             .getElementsByTagName("cache-path")
             .asElements()
+            .associateBy { it.attribute("name") }
 
-        assertEquals(1, paths.size)
-        assertEquals(AndroidShareArtifactManager.SHARE_ROOT_DIRECTORY, paths.single().attribute("name"))
-        assertEquals("${AndroidShareArtifactManager.SHARE_ROOT_DIRECTORY}/", paths.single().attribute("path"))
-        assertFalse(paths.any { it.attribute("path") == "." })
-        assertTrue(paths.all { it.attribute("path")?.contains("..") != true })
+        assertEquals(setOf(AndroidShareArtifactManager.SHARE_ROOT_DIRECTORY, "updates"), paths.keys)
+        assertEquals(
+            "${AndroidShareArtifactManager.SHARE_ROOT_DIRECTORY}/",
+            paths.getValue(AndroidShareArtifactManager.SHARE_ROOT_DIRECTORY).attribute("path"),
+        )
+        assertEquals("updates/", paths.getValue("updates").attribute("path"))
+        assertFalse(paths.values.any { it.attribute("path") == "." })
+        assertTrue(paths.values.all { it.attribute("path")?.contains("..") != true })
     }
 
     @Test

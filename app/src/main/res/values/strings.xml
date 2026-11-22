@@ -1106,6 +1106,20 @@
     <string name="about_version_name">Version %1$s</string>
     <!-- About screen build label. %1$s = build code string. Example: "Build 1041". -->
     <string name="about_build_code">Build %1$s</string>
+    <string name="about_mod_credit" translatable="false">Updated by lexievectorify</string>
+    <string name="update_check" translatable="false">Check for updates</string>
+    <string name="update_checking" translatable="false">Checking for updates…</string>
+    <string name="update_up_to_date" translatable="false">You are up to date</string>
+    <string name="update_available_title" translatable="false">Update available</string>
+    <string name="update_available_message" translatable="false">A newer personal build is available (%1$s). You have %2$s.</string>
+    <string name="update_whats_new" translatable="false">What\'s new</string>
+    <string name="update_now" translatable="false">Update now</string>
+    <string name="update_later" translatable="false">Later</string>
+    <string name="update_downloading" translatable="false">Downloading update…</string>
+    <string name="update_failed" translatable="false">Update failed: %1$s</string>
+    <string name="update_permission_title" translatable="false">Allow app installs</string>
+    <string name="update_permission_message" translatable="false">Enable &quot;Install unknown apps&quot; for this app, then tap Update again.</string>
+    <string name="update_not_personal" translatable="false">Updates are available in personal builds only.</string>
     <!-- "GitHub" is a brand name — do not translate. -->
     <string name="about_github" translatable="false">GitHub</string>
     <!-- "GitHub" is a brand name — do not translate. -->

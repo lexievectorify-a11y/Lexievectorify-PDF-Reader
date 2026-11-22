@@ -33,6 +33,7 @@ if (localPropertiesFile.exists()) {
 // with the same NDK clang. CI greps this line and installs that NDK before Gradle
 // runs, because the cargo target linker is resolved at configuration time.
 val androidNdkVersion = "28.2.13676358"
+val personalBuildNumber = providers.gradleProperty("personalBuildNumber").orNull?.toIntOrNull()
 
 fun configuredAppLocaleTags(): Set<String> {
     val localesConfigXml = providers
@@ -75,8 +76,9 @@ android {
         applicationId = "com.aryan.reader"
         minSdk = 26
         targetSdk = 36
-        versionCode = 65
+        versionCode = personalBuildNumber?.plus(1000) ?: 65
         versionName = "1.0.59"
+        buildConfigField("int", "PERSONAL_BUILD_NUMBER", (personalBuildNumber ?: 0).toString())
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
@@ -118,6 +120,12 @@ android {
     }
 
     signingConfigs {
+        create("personal") {
+            storeFile = rootProject.file("keystore/episteme-personal.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         create("release") {
             val storePath = localProperties.getProperty("MYAPP_RELEASE_STORE_FILE")
             if (!storePath.isNullOrEmpty()) {
@@ -149,6 +157,13 @@ android {
             buildConfigField("boolean", "IS_OFFLINE", "true")
             buildConfigField("String", "TTS_WORKER_URL", "\"\"")
             isShrinkResources = true
+        }
+
+        create("personal") {
+            initWith(getByName("release"))
+            matchingFallbacks += listOf("release")
+            signingConfig = signingConfigs.getByName("personal")
+            personalBuildNumber?.let { versionNameSuffix = "-b$it" }
         }
     }
 

@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build-debug:
-    name: Build installable debug APK
+  build-personal:
+    name: Build installable personal APK
     runs-on: ubuntu-latest
     steps:
       - name: Check out main
@@ -30,8 +30,10 @@ jobs:
           "$sdkmanager_bin" --install "ndk;$ndk_version"
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/$ndk_version" >> "$GITHUB_ENV"
 
-      - name: Build OSS debug APK
+      - name: Build OSS personal APK
         shell: bash
+        env:
+          PERSONAL_BUILD_NUMBER: ${{ github.run_number }}
         run: |
           set -euo pipefail
           export PATH="$HOME/.cargo/bin:$PATH"
@@ -41,11 +43,30 @@ jobs:
           fi
           ( cd rust/office-oxide-bridge && cargo --version )
           sed -i -e '/jogamp/d' -e '/https.jitpack/d' settings.gradle.kts
-          ./gradlew :app:assembleOssDebug --no-daemon -Pkotlin.daemon.jvmargs=-Xmx4g
+          ./gradlew :app:assembleOssPersonal --no-daemon -Pkotlin.daemon.jvmargs=-Xmx4g -PpersonalBuildNumber="$PERSONAL_BUILD_NUMBER"
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Episteme-oss-debug
-          path: app/build/outputs/renamed-apk/ossDebug/*.apk
+          name: Episteme-oss-personal
+          path: app/build/outputs/renamed-apk/ossPersonal/*.apk
           if-no-files-found: error
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PERSONAL_BUILD_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          tag="personal-b$PERSONAL_BUILD_NUMBER"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release delete "$tag" -y
+          fi
+          notes=$(awk '/^## \[/{section++} section == 1' CHANGELOG.md)
+          test -n "$notes"
+          gh release create "$tag" \
+            --title "Personal build $PERSONAL_BUILD_NUMBER" \
+            --notes "$notes" \
+            --latest \
+            app/build/outputs/renamed-apk/ossPersonal/*.apk
